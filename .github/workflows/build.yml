@@ -1,1 +1,21 @@
-
+name: Build Mix Assistant
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --config Release --target MixAssistant_VST3 MixAssistant_Standalone
+      - name: Windows installer (Inno Setup)
+        run: |
+          choco install innosetup -y
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\MixAssistant.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MixAssistant-Windows
+          path: |
+            installer/Output/*.exe
+            build/MixAssistant_artefacts/Release/VST3
